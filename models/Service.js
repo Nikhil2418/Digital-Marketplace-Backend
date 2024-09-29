@@ -9,12 +9,24 @@ const serviceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  category: {
-    type: String,
+  skills: {
+    type: [String], // Array of strings to store skills
     required: true,
   },
-  price: {
-    type: Number,
+  budget: {
+    type: Number, // Replaces the previous "price" field
+    required: true,
+  },
+  country: {
+    type: String, // Country field to store the location of the service
+    required: true,
+  },
+  duration: {
+    type: String, // Duration of the service
+    required: true,
+  },
+  timeCommitment: {
+    type: String, // Time commitment for the service
     required: true,
   },
   provider: {
@@ -22,9 +34,28 @@ const serviceSchema = new mongoose.Schema({
     ref: 'User', // Reference to the service provider
     required: true,
   },
+  customer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Reference to the customer who booked the service
+  },
   isPublished: {
     type: Boolean,
     default: false,
+  },
+  level: {
+    type: String,
+    enum: ['Beginner', 'Intermediate', 'Expert'],
+    default: 'Beginner',
+  },
+  status: {
+    type: String,
+    enum: ['Pending', 'In Progress', 'Completed', 'Paid'], // Track service status
+    default: 'Pending',
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['Unpaid', 'Pending', 'Paid'], // Track the payment status
+    default: 'Unpaid',
   },
   createdAt: {
     type: Date,
