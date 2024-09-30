@@ -1,6 +1,28 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+const reviewSchema = new mongoose.Schema({
+  reviewedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  reviewText: {
+    type: String,
+    required: true,
+  },
+  rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5,
+  },
+  reviewDate: {
+    type: Date,
+    default: Date.now,
+  },
+});
+
 // Define the CustomerProfile schema
 const customerProfileSchema = new Schema({
   userId: {
@@ -73,6 +95,16 @@ const customerProfileSchema = new Schema({
       status: { type: String }, // Verification status, e.g., 'Verified'
     },
   ],
+
+  reviews: [reviewSchema], // Add reviews as an array
+  averageRating: {
+    type: Number,
+    default: 0, // Average rating for the customer
+  },
+  ratingsCount: {
+    type: Number,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

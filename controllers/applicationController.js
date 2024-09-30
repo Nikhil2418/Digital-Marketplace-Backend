@@ -1,6 +1,8 @@
 const Application = require('../models/Application');
 const Service = require('../models/Service');
 const User = require('../models/User');
+const ServiceProviderProfile = require('../models/ServiceProviderProfile');
+const CustomerProfile = require('../models/CustomerProfile');
 
 // Create a new application
 exports.createApplication = async (req, res) => {
@@ -160,3 +162,72 @@ exports.updatePaymentStatus = async (req, res) => {
       res.status(500).json({ message: 'Error updating payment status', error });
     }
   };
+
+  exports.addReview = async (req, res) => {
+    try {
+      const { applicationId } = req.params;
+      const { reviewText, rating } = req.body;
+  
+      // Populate only the fields defined in your schema
+      const application = await Application.findById(applicationId)
+        .populate('applicantId') // Replace with your defined fields
+        .populate('serviceProviderId');
+  
+      if (!application) {
+        return res.status(404).json({ message: 'Application not found' });
+      }
+  
+      // Check if the logged-in user is either the service provider or the applicant
+      if (
+        req.user.id !== application.serviceProviderId.toString() &&
+        req.user.id !== application.applicantId.toString()
+      ) {
+        return res.status(403).json({ message: 'You are not authorized to add a review for this application.' });
+      }
+  
+      const newReview = {
+        reviewedBy: req.user.id,
+        reviewText,
+        rating,
+      };
+  
+      // Add the review to the application
+      application.reviews.push(newReview);
+      await application.save();
+  
+      // Update the Service Provider Profile if the review is given by a customer
+      if (req.user.id === application.applicantId.toString()) {
+        await updateProfileReview(ServiceProviderProfile, application.serviceProviderId, newReview);
+      }
+  
+      // Update the Customer Profile if the review is given by a service provider
+      if (req.user.id === application.serviceProviderId.toString()) {
+        await updateProfileReview(CustomerProfile, application.applicantId, newReview);
+      }
+  
+      res.json({ message: 'Review added successfully', reviews: application.reviews });
+    } catch (error) {
+        console.error('Server error while adding review:', error);
+      res.status(500).json({ message: 'Server error while adding review', error });
+    }
+  };
+  
+  // Helper function to update profiles
+  async function updateProfileReview(ProfileModel, profileId, review) {
+    const profile = await ProfileModel.findOne({ userId: profileId });
+    if (!profile) {
+      throw new Error('Profile not found');
+    }
+  
+    // Calculate new average rating
+    const newTotalRatings = profile.ratingsCount + 1;
+    const newAverageRating = (profile.averageRating * profile.ratingsCount + review.rating) / newTotalRatings;
+  
+    // Update profile details
+    profile.reviews.push(review);
+    profile.averageRating = newAverageRating;
+    profile.ratingsCount = newTotalRatings;
+  
+    await profile.save();
+  }
+  

@@ -26,12 +26,34 @@ const createService = async (req, res) => {
   };
 
 // Get all services (for both customers and service providers)
+// const getAllServices = async (req, res) => {
+//     try {
+//       const userId = req.user.id; // Get the current logged-in user's ID
+  
+//       // Fetch all services
+//       const services = await Service.find();
+  
+//       // Fetch all applications by the current user
+//       const applications = await Application.find({ applicantId: userId });
+  
+//       // Create a set of service IDs that the user has already applied for
+//       const appliedServiceIds = new Set(applications.map((application) => application.serviceId.toString()));
+  
+//       // Filter services to exclude the ones the user has applied for
+//       const availableServices = services.filter((service) => !appliedServiceIds.has(service._id.toString()));
+  
+//       res.json(availableServices);
+//     } catch (error) {
+//       res.status(500).json({ message: 'Server error while fetching services', error });
+//     }
+//   };
+
 const getAllServices = async (req, res) => {
     try {
       const userId = req.user.id; // Get the current logged-in user's ID
   
-      // Fetch all services
-      const services = await Service.find();
+      // Fetch all services and populate provider details
+      const services = await Service.find().populate('provider', 'name email _id');
   
       // Fetch all applications by the current user
       const applications = await Application.find({ applicantId: userId });
@@ -42,8 +64,26 @@ const getAllServices = async (req, res) => {
       // Filter services to exclude the ones the user has applied for
       const availableServices = services.filter((service) => !appliedServiceIds.has(service._id.toString()));
   
-      res.json(availableServices);
+      // Format the response to include provider details
+      const formattedServices = availableServices.map((service) => ({
+        _id: service._id,
+        title: service.title,
+        description: service.description,
+        skills: service.skills,
+        budget: service.budget,
+        country: service.country,
+        duration: service.duration,
+        timeCommitment: service.timeCommitment,
+        level: service.level,
+        provider: {
+          name: service.provider?.name,
+          id: service.provider?._id,
+        },
+      }));
+  
+      res.json(formattedServices);
     } catch (error) {
+        console.error('Server error while fetching services:', error);
       res.status(500).json({ message: 'Server error while fetching services', error });
     }
   };

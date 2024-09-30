@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createApplication, getApplications, getProviderApplications, getUserApplications, deleteApplication, updateApplicationStatus, updatePaymentStatus } = require('../controllers/applicationController');
+const { createApplication, getApplications, getProviderApplications, getUserApplications, deleteApplication, updateApplicationStatus, updatePaymentStatus, addReview } = require('../controllers/applicationController');
 const { authenticateToken } = require('../middlewares/auth');
 
 // Create a new application for a service
@@ -22,5 +22,9 @@ router.put('/applications/:applicationId/status', authenticateToken, updateAppli
 
 // PUT /api/applications/:applicationId/payment-status - Update payment status
 router.put('/applications/:applicationId/payment-status', authenticateToken, updatePaymentStatus);
+
+
+// PUT /api/applications/:applicationId/review - Add a review for a completed application
+router.put('/applications/:applicationId/review', authenticateToken, addReview);
 
 module.exports = router;

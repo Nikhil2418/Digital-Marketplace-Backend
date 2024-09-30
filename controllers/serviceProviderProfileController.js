@@ -61,3 +61,29 @@ exports.deleteProfile = async (req, res) => {
     res.status(500).json({ message: 'Error deleting profile', error });
   }
 };
+
+
+exports.updateServiceProviderProfile = async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const updateFields = req.body; // Get fields to update from the request body
+  
+      // Find the service provider profile by userId
+      const profile = await ServiceProviderProfile.findOne({ userId });
+  
+      if (!profile) {
+        return res.status(404).json({ message: 'Profile not found' });
+      }
+  
+      // Update fields based on the request body
+      Object.keys(updateFields).forEach((key) => {
+        profile[key] = updateFields[key];
+      });
+  
+      // Save the updated profile
+      const updatedProfile = await profile.save();
+      res.status(200).json(updatedProfile);
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating service provider profile', error });
+    }
+  };

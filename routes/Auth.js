@@ -4,6 +4,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const {authenticateToken} = require('../middlewares/auth');
 const CustomerProfile = require('../models/CustomerProfile');
+const ServiceProviderProfile = require('../models/ServiceProviderProfile');
 
 const router = express.Router();
 
@@ -40,6 +41,15 @@ router.post('/register', async (req, res) => {
         email: user.email,
       });
       await newCustomer.save();
+    }
+
+    if(userType === 'service-provider'){
+      const newServiceProvider = new ServiceProviderProfile({
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+      });
+      await newServiceProvider.save()
     }
 
     // Generate JWT and respond with token

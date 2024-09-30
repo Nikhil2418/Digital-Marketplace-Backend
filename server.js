@@ -6,7 +6,8 @@ const dotenv = require('dotenv');
 const customerProfiles = require('./routes/customerProfiles');
 const applicationRoutes = require('./routes/applicationRoutes');
 const serviceProviderProfileRoutes = require('./routes/serviceProviderProfileRoutes');
-
+const customerRoutes = require('./routes/customerRoutes');
+const reviewRoutes = require('./routes/reviewRoutes')
 
 // Load environment variables
 dotenv.config();
@@ -26,9 +27,12 @@ app.use('/api/services', require('./routes/serviceRoutes'))
 app.use('/api/customer-profiles', customerProfiles);
 app.use('/api', applicationRoutes);
 app.use('/api', serviceProviderProfileRoutes);
+app.use('/api', customerRoutes);
+app.use('/api/reviews', reviewRoutes);
 
-app.get('hello', (req, res)=>{
-    res.send("Welcome to API page")
+// add hello route
+app.get('/hello', (req, res) => {
+  res.send('Hello World!')
 })
 
 // Start server
